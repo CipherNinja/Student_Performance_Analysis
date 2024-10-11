@@ -4,7 +4,7 @@ from tensorflow.keras.models import load_model
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 # Load the trained model
-model = load_model(r'C:\Users\Priyesh Pandey\OneDrive\Desktop\student performance\model\student_performance_model.h5')
+model = load_model(r'C:\Users\Priyesh Pandey\OneDrive\Desktop\Student_Performance_Analysis\model\student_performance_model.h5')
 
 # Preprocess functions for scaling and encoding
 scaler = StandardScaler()
