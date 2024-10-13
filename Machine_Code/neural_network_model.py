@@ -1,33 +1,21 @@
 import pandas as pd
 import tensorflow as tf
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
+from preprocessing import preprocess_training_data
+import numpy as np
 
-# Load the dataset
-df = pd.read_csv(r'C:\Users\Priyesh Pandey\OneDrive\Desktop\student performance\PreprocessedData\preprocessed_student_performance.csv')
+# Load and preprocess the dataset for training
+X_train, y_train = preprocess_training_data(r'C:\Users\Priyesh Pandey\OneDrive\Desktop\Student_Performance_Analysis\Dataset\Student_Performance.csv')
 
-# Preprocessing: Encode categorical variables and scale the features
-label_encoder = LabelEncoder()
-df['Extracurricular Activities'] = label_encoder.fit_transform(df['Extracurricular Activities'])
+# Split the data for testing
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
-scaler = StandardScaler()
-df[['Hours Studied', 'Previous Scores', 'Sleep Hours', 'Sample Question Papers Practiced']] = scaler.fit_transform(
-    df[['Hours Studied', 'Previous Scores', 'Sleep Hours', 'Sample Question Papers Practiced']]
-)
-
-# Define features and target
-X = df.drop('Performance Index', axis=1)
-y = df['Performance Index']
-
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Build the neural network model
+# Build the neural network model with sigmoid activation in the output layer
 model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
     tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dense(1)  # Output layer with a single node for regression
+    tf.keras.layers.Dense(1, activation='sigmoid')  # Output layer with sigmoid activation
 ])
 
 # Compile the model
@@ -39,13 +27,16 @@ history = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=2
 # Make predictions
 y_pred = model.predict(X_test)
 
-# Evaluate the model performance
-mse = mean_squared_error(y_test, y_pred)
-r2 = r2_score(y_test, y_pred)
+# Scale the predictions to fit the range of 10 to 100
+y_pred_scaled = 10 + (y_pred * 90)  # Since sigmoid output is between 0 and 1, rescale to 10-100 range
+
+# Evaluate the model performance with scaled predictions
+mse = mean_squared_error(y_test, y_pred_scaled)
+r2 = r2_score(y_test, y_pred_scaled)
 
 print(f'Mean Squared Error: {mse}')
 print(f'R-squared: {r2}')
 
 # Save the trained model
-model.save(r'C:\Users\Priyesh Pandey\OneDrive\Desktop\student performance\model\student_performance_model.h5')
-print("Model saved at 'C:\\Users\\Priyesh Pandey\\OneDrive\\Desktop\\student performance\\model\\student_performance_model.h5'")
+model.save(r'C:\Users\Priyesh Pandey\OneDrive\Desktop\Student_Performance_Analysis\model\student_performance_model.h5')
+print("Model saved at 'C:\\Users\\Priyesh Pandey\\OneDrive\\Desktop\\student_performance\\model\\student_performance_model.h5'")

@@ -38,9 +38,6 @@ def get_student_performance_json(hours_studied, sleep_hours, extracurricular_act
     # Make prediction using the trained model
     predicted_performance = model.predict(input_data)
     
-    # Convert the predicted value to a standard Python float
-    predicted_performance = float(predicted_performance[0][0])
-    
     # Get workload analysis
     workload, performance_comment = analyze_workload(hours_studied, sleep_hours, extracurricular_activities, sample_papers_practiced, previous_scores)
     
@@ -54,7 +51,7 @@ def get_student_performance_json(hours_studied, sleep_hours, extracurricular_act
             "Previous Scores": previous_scores
         },
         "prediction": {
-            "Predicted Performance Index": round(predicted_performance, 2)
+            "Predicted Performance Index": round(predicted_performance[0][0], 2)
         },
         "analysis": {
             "Workload": workload,
@@ -65,3 +62,10 @@ def get_student_performance_json(hours_studied, sleep_hours, extracurricular_act
     # Convert to JSON string
     return json.dumps(student_data, indent=4)
 
+# Example usage
+json_result1 = get_student_performance_json(7, 8, 'Yes', 5, 75)
+json_result2 = get_student_performance_json(4, 5, 'No', 6, 50)
+
+# Print JSON results
+print(json_result1)
+print(json_result2)

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+        }
+        label, input, select, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        input, select {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #result {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+        #report {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Student Performance Prediction</h1>
+    <form id="prediction-form">
+        <label for="hours-studied">Hours Studied:</label>
+        <input type="number" id="hours-studied" name="hours-studied" min="0" max="10" required>
+
+        <label for="previous-scores">Previous Scores (40-100):</label>
+        <input type="number" id="previous-scores" name="previous-scores" min="40" max="100" required>
+
+        <label for="extracurricular-activities">Extracurricular Activities (Yes/No):</label>
+        <select id="extracurricular-activities" name="extracurricular-activities">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+
+        <label for="sleep-hours">Sleep Hours:</label>
+        <input type="number" id="sleep-hours" name="sleep-hours" min="0" max="10" required>
+
+        <label for="sample-question-papers">Sample Question Papers Practiced:</label>
+        <input type="number" id="sample-question-papers" name="sample-question-papers" min="0" max="10" required>
+
+        <button type="button" onclick="makePrediction()">Submit</button>
+    </form>
+
+    <h2>Prediction Result:</h2>
+    <p id="result"></p>
+
+    <div id="report"></div>
+
+    <script>
+        async function makePrediction() {
+            // Get form values
+            const input_data = [{
+                "Hours Studied": parseFloat(document.getElementById("hours-studied").value),
+                "Previous Scores": parseFloat(document.getElementById("previous-scores").value),
+                "Extracurricular Activities": document.getElementById("extracurricular-activities").value,
+                "Sleep Hours": parseFloat(document.getElementById("sleep-hours").value),
+                "Sample Question Papers Practiced": parseFloat(document.getElementById("sample-question-papers").value)
+            }];
+
+            try {
+                // Make the POST request to the Flask API
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(input_data),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                // Parse the response data
+                const data = await response.json();
+
+                // Update the result and report on the page
+                document.getElementById("result").innerText = "Predicted Performance: " + data['prediction']['Predicted Performance Index'];
+
+                // Generate an analysis report for the student
+                const reportContent = `
+                    <h3>Analysis Report</h3>
+                    <p><strong>Workload:</strong> ${data['analysis']['Workload']}</p>
+                    <p><strong>Performance Comment:</strong> ${data['analysis']['Performance Comment']}</p>
+                `;
+                document.getElementById("report").innerHTML = reportContent;
+
+            } catch (error) {
+                console.error("Error occurred while fetching prediction:", error);
+                document.getElementById("result").innerText = "Error: Unable to get prediction.";
+            }
+        }
+    </script>
+</body>
+</html>
